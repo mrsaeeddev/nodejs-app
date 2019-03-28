@@ -1,5 +1,7 @@
 var express = require("express");
 var bodyParser = require("body-parser");
+var jwt = require('jsonwebtoken');
+
 var app = express();
 var userModel = require('./models/users');
 
@@ -37,8 +39,18 @@ app.post('/signuprequest',(req,res) => {
       (user.name && user.password && user.email) != null || 
       (user.name && user.password && user.email) != undefined) {
       let newUser = new userModel({ name:user.name, email: user.email, password:user.password });
+      var signOptions = {
+        expiresIn:  "20m",
+        algorithm:  "HS256"
+       };
+      var token = jwt.sign({name:req.body.name,email:req.body.email},'123456',signOptions);
       newUser.save((err,doc)=>{
-            return res.json({ 'status':'Successfully registered','data':doc});
+           if(doc != undefined){
+            return res.json({ 'status':'Successfully registered','token':token});
+           }
+           else {
+               res.json({'error':'Error in registeration'});
+           }
       });
     }
 })
@@ -48,10 +60,22 @@ app.get('/login',(req,res) => {
 });
 
 app.post('/loginrequest', (req,res) => {
-    var name = req.body.name;
+    var email = req.body.email;
     var password = req.body.password;
-    console.log(name, password);
-    res.redirect('/');
+    console.log(email, password);
+    userModel.find({'email':req.body.email},(err,doc)=>{
+        if (doc.length>0) {
+            var signOptions = {
+                expiresIn:  "20m",
+                algorithm:  "HS256"
+               };
+              var token = jwt.sign({name:req.body.name,email:req.body.email},'123456',signOptions);
+              return res.json({'status':'Successfully logged in','token':token});
+        }
+       else {
+           return res.json({'error':'Error in logging in'});
+       }
+    });
 })
 //post route for adding new task 
 app.post("/addtask", function(req, res) {
