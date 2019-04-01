@@ -9,3 +9,4 @@ var usersModel = db.Schema({
 });
 
 module.exports = db.model('user',usersModel);
+
