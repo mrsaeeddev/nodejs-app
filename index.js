@@ -111,7 +111,18 @@ app.post("/updatebook", function(req, res) {
         {$set : {
             name:'Updated name'
         }},{new :true},(err,doc)=>{
-            console.log(doc);
+            if (doc != null) {
+                if (Object.keys(doc).length > 0) {
+                    res.json({'success':'Book name has been updated successfully'})
+                }
+            }
+            else if (err) {
+                res.json({'error':'Error in updating name'});
+            }
+            else {
+                res.json({'warning':'No book name to update'});
+            }
+           
         });
     }
 });
